@@ -7,10 +7,10 @@ require_once __DIR__ . "/services/UserService.php";
 require_once __DIR__ . "/services/MissionService.php";
 require_once __DIR__ . "/services/ScoreService.php";
 require_once __DIR__ . "/services/SecretService.php";
+require_once __DIR__ . "/services/PhotosService.php";
 $uService = UserService::getInstance();
 $mService = MissionService::getInstance();
-$sService = ScoreService::getInstance();
-$secretService = SecretService::getInstance();
+$pService = PhotosService::getInstance();
 $allUsers = $uService->getAll();
 ?>
 <!DOCTYPE html>
@@ -28,14 +28,17 @@ $allUsers = $uService->getAll();
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Poppins:300,400,500,700" rel="stylesheet">
 
   <!-- Bootstrap CSS File -->
-  <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
   <!-- Libraries CSS Files -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  <script src="https://kit.fontawesome.com/8c58d132fd.js" crossorigin="anonymous"></script>
   <link href="lib/animate/animate.min.css" rel="stylesheet">
 
   <!-- Main Stylesheet File -->
   <link href="css/style.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -96,12 +99,9 @@ $allUsers = $uService->getAll();
   <main id="main">
     <?php 
     if (isset($_SESSION['user'])) {
+      $mission = $mService->getActive($_SESSION['user']['id']);
       ?>
       <section id="killer">
-        <?php 
-        $mService = MissionService::getInstance();
-        $mission = $mService->getActive($_SESSION['user']['id']);
-        ?>
         <div class="container wow fadeIn">
           <div class="section-header text-center">
             <h3 class="section-title">Killer</h3>
@@ -241,148 +241,56 @@ $allUsers = $uService->getAll();
           ?>
         </div>
       </section>
+
       <section id="photos">
-        <?php 
-        $mService = MissionService::getInstance();
-        $mission = $mService->getActive($_SESSION['user']['id']);
-        ?>
         <div class="container wow fadeIn">
           <div class="section-header text-center">
             <h3 class="section-title">Concours de Costumes</h3>
-            <?php
-            $actualDay = date('w');
-            /*
-              * Dimanche Lundi Mardi et Mercredi -> Prochaine mission Mercredi 12h
-              * Jeudi Vendredi Samedi -> Prochaine mission Samedi 12h 
-              * Attention, pour le samedi et le mercredi, les règles sont valables uniquement jusqu'à 12h
-              */ 
-            if (($actualDay >= 0 AND $actualDay <= 2) OR ($actualDay == 6))  {
-              if ($actualDay == 6 AND date('H') < 12) {
-                $nextMissionDay = date('Y-m-d');
-              }else{
-                $nextMissionDay = date('Y-m-d',strtotime('next Wednesday'));
-              }
-            }else{
-              if ($actualDay == 3 AND date('H') < 12) {
-                $nextMissionDay = date('Y-m-d');
-              }else{
-                $nextMissionDay = date('Y-m-d',strtotime('next Saturday'));
-              }
-            }
+            <br>
             
-            switch ($mission->getState()) {
-              case NULL:
-                ?>
-                <p class="section-description">
-                  Il n'y a pas encore de missions distribuées<br>
-                  <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
-                  <div class="row justify-content-center">
-                      <div class='countdown' data-date="<?= date('Y-m-d',strtotime('next Saturday'));?>" data-time="12:00:00"></div>
-                    </div>
-                  <br>
-                </p>
+            <br>
+            <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
+            <select class="form-control" id="funniest" name="funniest">
+                <option value="none" selected disabled>---</option>
                 <?php
-                break;
-              // Si on est en lice
-              case 0:
-                $day = date('w',strtotime($nextMissionDay)) == 3 ? "Mercredi":"Samedi";
+                foreach ($allUsers as $user) {
+                    if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                        ?>
+                        <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                        <?php
+                    }
+                }
                 ?>
-                <p class="section-description">Votre mission jusqu'à <?= $day ;?> 12h00, si vous l'acceptez.</p>
+            </select>
+            <br>
+            <h5>Costume le plus stylé <i class="fas fa-crown"></i></h5>
+            <select class="form-control" id="styliest" name="styliest">
+                <option value="none" selected disabled>---</option>
                 <?php
-                break;
-              // Si on a été tué
-              case 1:
+                foreach ($allUsers as $user) {
+                    if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                        ?>
+                        <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                        <?php
+                    }
+                }
                 ?>
-                <p class="section-description">
-                  Vous avez été tué par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
-                  <br>
-                  Revenez à la prochaine distribution de missions
-                  <br>
-                  <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
-                  <div class='countdown' data-date="<?= $nextMissionDay;?>" data-time="12:00"></div>
-                </p>
+            </select>
+            <br>
+            <h5>Costume le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
+            <select class="form-control" id="funniest" name="funniest">
+                <option value="none" selected disabled>---</option>
                 <?php
-                break;
-              // Si on a été découvert
-              case 2: 
+                foreach ($allUsers as $user) {
+                    if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                        ?>
+                        <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                        <?php
+                    }
+                }
                 ?>
-                <p class="section-description">
-                  Vous avez été découvert par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
-                  <br>
-                  Revenez à la prochaine distribution de missions
-                  <br>
-                  <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
-                  <div class='countdown' data-date="<?= $nextMissionDay;?>" data-time="12:00"></div>
-                </p>
-                <?php
-                break;
-              // Si on a gagné
-              case 3:
-                ?>
-                <p class="section-description">
-                  Vous avez gagné cette partie
-                  <br>
-                  Revenez à la prochaine distribution de missions
-                  <br>
-                  <span class="h1 pseudo"><i class="fas fa-trophy"></i></span>
-                  <div class='countdown' data-date="<?= $nextMissionDay;?>" data-time="12:00"></div>
-                </p>
-                <?php
-                break;
-              // Default
-              default:
-                ?>
-                <p class="section-description">
-                  Il n'y a pas encore de missions lancées
-                  <br>
-                  Revenez quand elles seront distribuées
-                  <br>
-                  <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
-                </p>
-                <?php
-                break;
-            }
-            ?>
+            </select>
           </div>
-          <br>
-          <?php 
-          if ($mission->getState() == 0 & (!is_null($mission->getState()))) {
-            ?>
-            <div class="row justify-content-center">
-              <div class="col-lg-10 col-md-8 wow fadeInUp" data-wow-delay="0.4s">
-                <div class="box">
-                  <div class="icon"><a href=""><i class="<?= $mission->getMission()->getLogo();?>"></i></a></div>
-                  <h4 class="title"><a href=""><?= $mission->getMission()->getTitle();?></a></h4>
-                  <p class="description">
-                      <div class='countdown' data-date="<?= date('Y-m-d',strtotime($nextMissionDay));?>" data-time="12:00"></div>
-                      <br>
-                      <?= str_replace("{joueur}", "<span class='pseudo'>".$uService->getName($mission->getTarget())."</span>",$mission->getMission()->getDescription());?>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="row justify-content-center">
-              <div class="col-6">
-                <form method="POST" class="text-center" action="script/getKilled.php">
-                  <div class="form-group mx-sm-3 mb-2">
-                    <span>Je me suis fait kill</span>
-                  </div>
-                  <button type="submit" name="kill" value="kill" class="btn btn-vacation mb-4">Valider</button>
-                </form>
-              </div>
-              <div class="col-6">
-                <form method="POST" class="text-center" action="script/getDiscovered.php">
-                  <div class="form-group mx-sm-3 mb-2">
-                    <span>J'ai été percé à jour par </span>
-                    <span class="pseudo"><?= $uService->getName($mission->getTarget());?></span>
-                  </div>
-                  <button type="submit" name="kill" value="kill" class="btn btn-vacation mb-4">Valider</button>
-                </form>
-              </div>
-            </div>
-            <?php
-          }
-          ?>
         </div>
       </section>
       <?php
@@ -419,37 +327,6 @@ $allUsers = $uService->getAll();
     </div>
   </footer>
 
-  <!-- <script>
-    var div = document.createElement('div');
-    div.className = 'fb-customerchat';
-    div.setAttribute('page_id', '623370331464687');
-    div.setAttribute('ref', '');
-    document.body.appendChild(div);
-    window.fbMessengerPlugins = window.fbMessengerPlugins || {
-      init: function () {
-        FB.init({
-          appId            : '1678638095724206',
-          autoLogAppEvents : true,
-          xfbml            : true,
-          version          : 'v3.0'
-        });
-      }, callable: []
-    };
-    window.fbAsyncInit = window.fbAsyncInit || function () {
-      window.fbMessengerPlugins.callable.forEach(function (item) { item(); });
-      window.fbMessengerPlugins.init();
-    };
-    setTimeout(function () {
-      (function (d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) { return; }
-        js = d.createElement(s);
-        js.id = id;
-        js.src = "//connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
-        fjs.parentNode.insertBefore(js, fjs);
-      }(document, 'script', 'facebook-jssdk'));
-    }, 0);
-  </script>-->
   <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
 
   <!-- JavaScript Libraries -->

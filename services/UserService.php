@@ -17,11 +17,11 @@ class UserService{
 		return self::$instance;
 	}
 	public function getAll() : array {
-		return $this->manager->getAll("SELECT a.id,a.email,a.first_name,a.last_name,b.score_total,a.username FROM user a LEFT JOIN (SELECT SUM(score) as score_total,user FROM score_history GROUP BY user ORDER BY score_total) b ON a.id = b.user ORDER BY a.first_name");
+		return $this->manager->getAll("SELECT a.id,a.email,a.first_name,a.last_name,b.score_total,a.username,a.photo FROM user a LEFT JOIN (SELECT SUM(score) as score_total,user FROM score_history GROUP BY user ORDER BY score_total) b ON a.id = b.user ORDER BY a.first_name");
 	}
 
 	public function getAllActive() : array {
-		return $this->manager->getAll("SELECT a.id,a.email,a.first_name,a.last_name,b.score_total FROM user a LEFT JOIN (SELECT SUM(score) as score_total,user FROM score_history GROUP BY user ORDER BY score_total) b ON a.id = b.user WHERE a.active = 1 ORDER BY a.first_name");
+		return $this->manager->getAll("SELECT a.id,a.email,a.first_name,a.last_name,b.score_total,a.photo FROM user a LEFT JOIN (SELECT SUM(score) as score_total,user FROM score_history GROUP BY user ORDER BY score_total) b ON a.id = b.user WHERE a.active = 1 ORDER BY a.first_name");
 	}
 
 	public function getLeaderboard(){
