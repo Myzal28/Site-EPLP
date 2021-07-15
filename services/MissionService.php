@@ -29,6 +29,15 @@ class MissionService {
 		$state = $this->manager->findOne('SELECT state,next_mission FROM user_mission_state WHERE user=?',[
 			0 => $idUser
 		]);
+
+		$array['state'] = null;
+		$array['end_date'] = null;
+		$array['mission'] = null;
+		$array['killer'] = null;
+		$array['target'] = null;
+		if($state == false){
+			return new UserMission($array);
+		}
 		switch ($state['state']) {
 			// Toujours en lice
 			case 0:
@@ -47,12 +56,16 @@ class MissionService {
 		}
 
 		$mission = $this->manager->findOne($sql,[ 0 => $idUser]);
-		$array['state'] = $state['state'];
-		$array['end_date'] = $state['next_mission'];
-		$array['mission'] = isset($mission['title']) ? new Mission($mission):NULL;
-		$array['killer'] = isset($mission['id_killer']) ? $mission['id_killer']:NULL;
-		$array['target'] = isset($mission['title']) ? $mission['target']:NULL;
-		return new UserMission($array);
+		if($mission == false){
+			return new UserMission($array);
+		}else{
+			$array['state'] = $state['state'];
+			$array['end_date'] = $state['next_mission'];
+			$array['mission'] = isset($mission['title']) ? new Mission($mission):NULL;
+			$array['killer'] = isset($mission['id_killer']) ? $mission['id_killer']:NULL;
+			$array['target'] = isset($mission['title']) ? $mission['target']:NULL;
+			return new UserMission($array);
+		}
 	}
 
 	public function getUnused(){
