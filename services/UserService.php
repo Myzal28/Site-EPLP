@@ -54,4 +54,24 @@ class UserService{
     	mail($u['email'],$title,$msg,HEADERS);
     }
 
+	public function addVote($voter, $category, $voteFor){
+		$this->manager->exec('INSERT INTO votes (id_voter,category,voteFor) VALUES (?,?,?)',[
+			0 => $voter,
+			1 => $category,
+			2 => $voteFor
+		]);
+	}
+
+	public function hasVoted($idUser){
+		$vote = $this->manager->findOne('SELECT id FROM votes WHERE id_voter = ?',[
+			$idUser
+		]);
+
+		if($vote == false){
+			return false;
+		}else{
+			return true;
+		}
+	}
+
 }

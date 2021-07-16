@@ -86,7 +86,7 @@ $allUsers = $uService->getAll();
       <?php 
       if (isset($_SESSION['user'])) {
         ?>
-        <a href="#stats" class="btn-get-started">Voir les statistiques</a>
+        <!-- <a href="#stats" class="btn-get-started">Voir les statistiques</a> -->
         <?php
       }else{
         ?>
@@ -106,44 +106,20 @@ $allUsers = $uService->getAll();
           <div class="section-header text-center">
             <h3 class="section-title">Killer</h3>
             <?php
-            $actualDay = date('w');
-            /*
-              * Dimanche Lundi Mardi et Mercredi -> Prochaine mission Mercredi 12h
-              * Jeudi Vendredi Samedi -> Prochaine mission Samedi 12h 
-              * Attention, pour le samedi et le mercredi, les règles sont valables uniquement jusqu'à 12h
-              */ 
-            if (($actualDay >= 0 AND $actualDay <= 2) OR ($actualDay == 6))  {
-              if ($actualDay == 6 AND date('H') < 12) {
-                $nextMissionDay = date('Y-m-d');
-              }else{
-                $nextMissionDay = date('Y-m-d',strtotime('next Wednesday'));
-              }
-            }else{
-              if ($actualDay == 3 AND date('H') < 12) {
-                $nextMissionDay = date('Y-m-d');
-              }else{
-                $nextMissionDay = date('Y-m-d',strtotime('next Saturday'));
-              }
-            }
-            
             switch ($mission->getState()) {
               case NULL:
                 ?>
                 <p class="section-description">
                   Il n'y a pas encore de missions distribuées<br>
                   <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
-                  <div class="row justify-content-center">
-                      <div class='countdown' data-date="<?= date('Y-m-d',strtotime('next Saturday'));?>" data-time="12:00:00"></div>
-                    </div>
                   <br>
                 </p>
                 <?php
                 break;
               // Si on est en lice
               case 0:
-                $day = date('w',strtotime($nextMissionDay)) == 3 ? "Mercredi":"Samedi";
                 ?>
-                <p class="section-description">Votre mission jusqu'à <?= $day ;?> 12h00, si vous l'acceptez.</p>
+                <p class="section-description">Votre mission pour la soirée, si vous l'acceptez.</p>
                 <?php
                 break;
               // Si on a été tué
@@ -152,10 +128,7 @@ $allUsers = $uService->getAll();
                 <p class="section-description">
                   Vous avez été tué par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
                   <br>
-                  Revenez à la prochaine distribution de missions
-                  <br>
                   <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
-                  <div class='countdown' data-date="<?= $nextMissionDay;?>" data-time="12:00"></div>
                 </p>
                 <?php
                 break;
@@ -165,10 +138,7 @@ $allUsers = $uService->getAll();
                 <p class="section-description">
                   Vous avez été découvert par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
                   <br>
-                  Revenez à la prochaine distribution de missions
-                  <br>
                   <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
-                  <div class='countdown' data-date="<?= $nextMissionDay;?>" data-time="12:00"></div>
                 </p>
                 <?php
                 break;
@@ -178,10 +148,7 @@ $allUsers = $uService->getAll();
                 <p class="section-description">
                   Vous avez gagné cette partie
                   <br>
-                  Revenez à la prochaine distribution de missions
-                  <br>
                   <span class="h1 pseudo"><i class="fas fa-trophy"></i></span>
-                  <div class='countdown' data-date="<?= $nextMissionDay;?>" data-time="12:00"></div>
                 </p>
                 <?php
                 break;
@@ -249,47 +216,66 @@ $allUsers = $uService->getAll();
             <br>
             
             <br>
-            <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
-            <select class="form-control" id="funniest" name="funniest">
-                <option value="none" selected disabled>---</option>
-                <?php
-                foreach ($allUsers as $user) {
-                    if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                        ?>
-                        <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
-                        <?php
+            <?php
+            if($uService->hasVoted($_SESSION['user']['id'])){
+              ?>
+              <p class="section-description">
+                  Vous avez déjà voté    
+                  <br>
+                  Les résultats seront donnés dans la soirée
+                  <br>
+                  <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
+                </p>
+              <?php
+            }else{
+              ?>
+              <form method="POST" action="script/addVotes.php">
+                <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
+                <select class="form-control" id="funniest" name="funniest">
+                    <option value="none" selected disabled>---</option>
+                    <?php
+                    foreach ($allUsers as $user) {
+                        if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                            ?>
+                            <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                            <?php
+                        }
                     }
-                }
-                ?>
-            </select>
-            <br>
-            <h5>Costume le plus stylé <i class="fas fa-crown"></i></h5>
-            <select class="form-control" id="styliest" name="styliest">
-                <option value="none" selected disabled>---</option>
-                <?php
-                foreach ($allUsers as $user) {
-                    if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                        ?>
-                        <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
-                        <?php
+                    ?>
+                </select>
+                <br>
+                <h5>Costume le plus stylé <i class="fas fa-crown"></i></h5>
+                <select class="form-control" id="styliest" name="styliest">
+                    <option value="none" selected disabled>---</option>
+                    <?php
+                    foreach ($allUsers as $user) {
+                        if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                            ?>
+                            <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                            <?php
+                        }
                     }
-                }
-                ?>
-            </select>
-            <br>
-            <h5>Costume le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
-            <select class="form-control" id="funniest" name="funniest">
-                <option value="none" selected disabled>---</option>
-                <?php
-                foreach ($allUsers as $user) {
-                    if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                        ?>
-                        <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
-                        <?php
+                    ?>
+                </select>
+                <br>
+                <h5>Costume le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
+                <select class="form-control" id="original" name="original">
+                    <option value="none" selected disabled>---</option>
+                    <?php
+                    foreach ($allUsers as $user) {
+                        if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                            ?>
+                            <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                            <?php
+                        }
                     }
-                }
-                ?>
-            </select>
+                    ?>
+                </select>
+                <button type="submit" class="btn btn-vacation mt-4">Envoyer mon vote <i class="fas fa-vote-yea"></i></button>
+              </form>
+              <?php
+            }
+            ?>
           </div>
         </div>
       </section>
