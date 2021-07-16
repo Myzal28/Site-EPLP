@@ -74,4 +74,15 @@ class UserService{
 		}
 	}
 
+	public function addPhoto($idUser, $photoName){
+		return $this->manager->exec('UPDATE user SET photo = ? WHERE id = ?',[
+			0 => $photoName,
+			1 => $idUser
+		]);
+	}
+
+	public function hasPhoto($idUser){
+		$user = $this->manager->findOne('SELECT photo FROM user WHERE id = ?',[$idUser]);
+		return $user == false;
+	}
 }

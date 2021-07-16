@@ -11,7 +11,7 @@ require_once __DIR__ . "/services/PhotosService.php";
 $uService = UserService::getInstance();
 $mService = MissionService::getInstance();
 $pService = PhotosService::getInstance();
-$allUsers = $uService->getAll();
+$allUsers = $uService->getAllActive();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -95,191 +95,221 @@ $allUsers = $uService->getAll();
       }
       ?>
     </div>
-  </section>
+  </section> 
   <main id="main">
     <?php 
     if (isset($_SESSION['user'])) {
-      $mission = $mService->getActive($_SESSION['user']['id']);
-      ?>
-      <section id="killer">
-        <div class="container wow fadeIn">
-          <div class="section-header text-center">
-            <h3 class="section-title">Killer</h3>
-            <?php
-            switch ($mission->getState()) {
-              case NULL:
-                ?>
-                <p class="section-description">
-                  Il n'y a pas encore de missions distribuées<br>
-                  <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
-                  <br>
-                </p>
-                <?php
-                break;
-              // Si on est en lice
-              case 0:
-                ?>
-                <p class="section-description">Votre mission pour la soirée, si vous l'acceptez.</p>
-                <?php
-                break;
-              // Si on a été tué
-              case 1:
-                ?>
-                <p class="section-description">
-                  Vous avez été tué par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
-                  <br>
-                  <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
-                </p>
-                <?php
-                break;
-              // Si on a été découvert
-              case 2: 
-                ?>
-                <p class="section-description">
-                  Vous avez été découvert par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
-                  <br>
-                  <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
-                </p>
-                <?php
-                break;
-              // Si on a gagné
-              case 3:
-                ?>
-                <p class="section-description">
-                  Vous avez gagné cette partie
-                  <br>
-                  <span class="h1 pseudo"><i class="fas fa-trophy"></i></span>
-                </p>
-                <?php
-                break;
-              // Default
-              default:
-                ?>
-                <p class="section-description">
-                  Il n'y a pas encore de missions lancées
-                  <br>
-                  Revenez quand elles seront distribuées
-                  <br>
-                  <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
-                </p>
-                <?php
-                break;
-            }
-            ?>
+      if($_SESSION['user']['username'] == "admin"){
+        ?>
+        <section id="photoAdd">
+          <div class="container wow fadeIn">
+            <div class="section-header text-center">
+              <h3 class="section-title">Ajouter ma photo</h3>
+              <form action="script/addPhoto.php" method="POST" enctype="multipart/form-data">
+                <select name="user" id="user" class="form-control mt-4" required>
+                  <option value="" selected disabled>---</option>
+                  <?php 
+                  foreach($allUsers as $user){
+                    if($user['photo'] == null){
+                      ?>
+                      <option value="<?= $user['id'];?>"><?= $user['first_name']." ".$user['last_name'];?></option>
+                      <?php
+                    }
+                  }
+                  ?>
+                </select>
+                <input type="file" name="photo" class="form-control mt-4" required>
+                <button type="submit" class="btn btn-vacation mt-4">
+                  C'est dans la boîte <i class="fas fa-camera-retro"></i>
+                </button>
+              </form>
+            </div>
           </div>
-          <br>
-          <?php 
-          if ($mission->getState() == 0 & (!is_null($mission->getState()))) {
-            ?>
-            <div class="row justify-content-center">
-              <div class="col-lg-10 col-md-8 wow fadeInUp" data-wow-delay="0.4s">
-                <div class="box">
-                  <div class="icon"><a href=""><i class="<?= $mission->getMission()->getLogo();?>"></i></a></div>
-                  <h4 class="title"><a href=""><?= $mission->getMission()->getTitle();?></a></h4>
-                  <p class="description">
-                      <div class='countdown' data-date="<?= date('Y-m-d',strtotime($nextMissionDay));?>" data-time="12:00"></div>
-                      <br>
-                      <?= str_replace("{joueur}", "<span class='pseudo'>".$uService->getName($mission->getTarget())."</span>",$mission->getMission()->getDescription());?>
+        </section>
+        <?php
+      }else{
+        $mission = $mService->getActive($_SESSION['user']['id']);
+        ?>
+        <section id="killer">
+          <div class="container wow fadeIn">
+            <div class="section-header text-center">
+              <h3 class="section-title">Killer</h3>
+              <?php
+              switch ($mission->getState()) {
+                case NULL:
+                  ?>
+                  <p class="section-description">
+                    Il n'y a pas encore de missions distribuées<br>
+                    <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
+                    <br>
                   </p>
+                  <?php
+                  break;
+                // Si on est en lice
+                case 0:
+                  ?>
+                  <p class="section-description">Votre mission pour la soirée, si vous l'acceptez.</p>
+                  <?php
+                  break;
+                // Si on a été tué
+                case 1:
+                  ?>
+                  <p class="section-description">
+                    Vous avez été tué par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
+                    <br>
+                    <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
+                  </p>
+                  <?php
+                  break;
+                // Si on a été découvert
+                case 2: 
+                  ?>
+                  <p class="section-description">
+                    Vous avez été découvert par <span class="pseudo"><?= $uService->getName($mission->getKiller());?></span>
+                    <br>
+                    <span class="h1"><i class="fas fa-skull-crossbones"></i></span>
+                  </p>
+                  <?php
+                  break;
+                // Si on a gagné
+                case 3:
+                  ?>
+                  <p class="section-description">
+                    Vous avez gagné cette partie
+                    <br>
+                    <span class="h1 pseudo"><i class="fas fa-trophy"></i></span>
+                  </p>
+                  <?php
+                  break;
+                // Default
+                default:
+                  ?>
+                  <p class="section-description">
+                    Il n'y a pas encore de missions lancées
+                    <br>
+                    Revenez quand elles seront distribuées
+                    <br>
+                    <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
+                  </p>
+                  <?php
+                  break;
+              }
+              ?>
+            </div>
+            <br>
+            <?php 
+            if ($mission->getState() == 0 & (!is_null($mission->getState()))) {
+              ?>
+              <div class="row justify-content-center">
+                <div class="col-lg-10 col-md-8 wow fadeInUp" data-wow-delay="0.4s">
+                  <div class="box">
+                    <div class="icon"><a href=""><i class="<?= $mission->getMission()->getLogo();?>"></i></a></div>
+                    <h4 class="title"><a href=""><?= $mission->getMission()->getTitle();?></a></h4>
+                    <p class="description">
+                        <div class='countdown' data-date="<?= date('Y-m-d',strtotime($nextMissionDay));?>" data-time="12:00"></div>
+                        <br>
+                        <?= str_replace("{joueur}", "<span class='pseudo'>".$uService->getName($mission->getTarget())."</span>",$mission->getMission()->getDescription());?>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="row justify-content-center">
-              <div class="col-6">
-                <form method="POST" class="text-center" action="script/getKilled.php">
-                  <div class="form-group mx-sm-3 mb-2">
-                    <span>Je me suis fait kill</span>
-                  </div>
-                  <button type="submit" name="kill" value="kill" class="btn btn-vacation mb-4">Valider</button>
-                </form>
+              <div class="row justify-content-center">
+                <div class="col-6">
+                  <form method="POST" class="text-center" action="script/getKilled.php">
+                    <div class="form-group mx-sm-3 mb-2">
+                      <span>Je me suis fait kill</span>
+                    </div>
+                    <button type="submit" name="kill" value="kill" class="btn btn-vacation mb-4">Valider</button>
+                  </form>
+                </div>
+                <div class="col-6">
+                  <form method="POST" class="text-center" action="script/getDiscovered.php">
+                    <div class="form-group mx-sm-3 mb-2">
+                      <span>J'ai été percé à jour par </span>
+                      <span class="pseudo"><?= $uService->getName($mission->getTarget());?></span>
+                    </div>
+                    <button type="submit" name="kill" value="kill" class="btn btn-vacation mb-4">Valider</button>
+                  </form>
+                </div>
               </div>
-              <div class="col-6">
-                <form method="POST" class="text-center" action="script/getDiscovered.php">
-                  <div class="form-group mx-sm-3 mb-2">
-                    <span>J'ai été percé à jour par </span>
-                    <span class="pseudo"><?= $uService->getName($mission->getTarget());?></span>
-                  </div>
-                  <button type="submit" name="kill" value="kill" class="btn btn-vacation mb-4">Valider</button>
-                </form>
-              </div>
-            </div>
-            <?php
-          }
-          ?>
-        </div>
-      </section>
-
-      <section id="photos">
-        <div class="container wow fadeIn">
-          <div class="section-header text-center">
-            <h3 class="section-title">Concours de Costumes</h3>
-            <br>
-            
-            <br>
-            <?php
-            if($uService->hasVoted($_SESSION['user']['id'])){
-              ?>
-              <p class="section-description">
-                  Vous avez déjà voté    
-                  <br>
-                  Les résultats seront donnés dans la soirée
-                  <br>
-                  <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
-                </p>
-              <?php
-            }else{
-              ?>
-              <form method="POST" action="script/addVotes.php">
-                <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
-                <select class="form-control" id="funniest" name="funniest">
-                    <option value="none" selected disabled>---</option>
-                    <?php
-                    foreach ($allUsers as $user) {
-                        if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                            ?>
-                            <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
-                            <?php
-                        }
-                    }
-                    ?>
-                </select>
-                <br>
-                <h5>Costume le plus stylé <i class="fas fa-crown"></i></h5>
-                <select class="form-control" id="styliest" name="styliest">
-                    <option value="none" selected disabled>---</option>
-                    <?php
-                    foreach ($allUsers as $user) {
-                        if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                            ?>
-                            <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
-                            <?php
-                        }
-                    }
-                    ?>
-                </select>
-                <br>
-                <h5>Costume le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
-                <select class="form-control" id="original" name="original">
-                    <option value="none" selected disabled>---</option>
-                    <?php
-                    foreach ($allUsers as $user) {
-                        if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                            ?>
-                            <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
-                            <?php
-                        }
-                    }
-                    ?>
-                </select>
-                <button type="submit" class="btn btn-vacation mt-4">Envoyer mon vote <i class="fas fa-vote-yea"></i></button>
-              </form>
               <?php
             }
             ?>
           </div>
-        </div>
-      </section>
-      <?php
+        </section>
+
+        <section id="photos">
+          <div class="container wow fadeIn">
+            <div class="section-header text-center">
+              <h3 class="section-title">Concours de Costumes</h3>
+              <br>
+              
+              <br>
+              <?php
+              if($uService->hasVoted($_SESSION['user']['id'])){
+                ?>
+                <p class="section-description">
+                    Vous avez déjà voté    
+                    <br>
+                    Les résultats seront donnés dans la soirée
+                    <br>
+                    <span class="h1"><i class="fas fa-cog fa-spin"></i></i></span>
+                  </p>
+                <?php
+              }else{
+                ?>
+                <form method="POST" action="script/addVotes.php">
+                  <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
+                  <select class="form-control" id="funniest" name="funniest">
+                      <option value="none" selected disabled>---</option>
+                      <?php
+                      foreach ($allUsers as $user) {
+                          if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                              ?>
+                              <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                              <?php
+                          }
+                      }
+                      ?>
+                  </select>
+                  <br>
+                  <h5>Costume le plus stylé <i class="fas fa-crown"></i></h5>
+                  <select class="form-control" id="styliest" name="styliest">
+                      <option value="none" selected disabled>---</option>
+                      <?php
+                      foreach ($allUsers as $user) {
+                          if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                              ?>
+                              <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                              <?php
+                          }
+                      }
+                      ?>
+                  </select>
+                  <br>
+                  <h5>Costume le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
+                  <select class="form-control" id="original" name="original">
+                      <option value="none" selected disabled>---</option>
+                      <?php
+                      foreach ($allUsers as $user) {
+                          if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
+                              ?>
+                              <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                              <?php
+                          }
+                      }
+                      ?>
+                  </select>
+                  <button type="submit" class="btn btn-vacation mt-4">Envoyer mon vote <i class="fas fa-vote-yea"></i></button>
+                </form>
+                <?php
+              }
+              ?>
+            </div>
+          </div>
+        </section>
+        <?php
+      }
     }else{
       ?>
       <section id="connection">
