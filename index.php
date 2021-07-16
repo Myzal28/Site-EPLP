@@ -81,8 +81,8 @@ $allUsers = $uService->getAllActive();
 
   <section id="home">
     <div class="hero-container">
-      <h1>Bienvenue sur Eplp</h1>
-      <h2>Ici des amitiés se briseront. Des secrets seront percés. Êtes vous prêt ? </h2>
+      <h1>Bienvenue sur le site du Giga Annif</h1>
+      <h2>Installe toi confortablement, prends une bière et on t'attend sur le dancefloor</h2>
       <?php 
       if (isset($_SESSION['user'])) {
         ?>
@@ -292,15 +292,18 @@ $allUsers = $uService->getAllActive();
               }else{
                 ?>
                 <form method="POST" action="script/addVotes.php" class="mt-4">
-                  <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
+                  <h5>Le plus drôle <i class="fas fa-grin-squint"></i></h5>
                   <select class="form-control" id="funniest" name="funniest">
                       <option value="none" selected disabled>---</option>
                       <?php
                       $i = 0;
                       foreach ($allUsers as $user) {
-                        $i++;
+                          if ($user['id'] == $_SESSION['user']['id']) {
+                            $i++;
+                          }
                           if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                              ?>
+                             $i++; 
+			                       ?>
                               <option value="<?= $user['id'];?>">N°<?= $i." : ".$user['first_name'];?></option>
                               <?php
                           }
@@ -308,28 +311,38 @@ $allUsers = $uService->getAllActive();
                       ?>
                   </select>
                   <br>
-                  <h5>Costume le plus stylé <i class="fas fa-crown"></i></h5>
+                  <h5>Le plus stylé <i class="fas fa-crown"></i></h5>
                   <select class="form-control" id="styliest" name="styliest">
                       <option value="none" selected disabled>---</option>
                       <?php
-                      foreach ($allUsers as $user) {
+		                  $i = 0;
+                      foreach ($allUsers as $user){
+                          if ($user['id'] == $_SESSION['user']['id']) {
+                            $i++;
+                          }
                           if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                              ?>
-                              <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                              $i++;
+			                        ?>
+                              <option value="<?= $user['id'];?>">N°<?= $i." : ".$user['first_name'];?></option>
                               <?php
                           }
                       }
                       ?>
                   </select>
                   <br>
-                  <h5>Costume le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
+                  <h5>Le plus original/atypique <i class="fas fa-hat-cowboy"></i></h5>
                   <select class="form-control" id="original" name="original">
                       <option value="none" selected disabled>---</option>
                       <?php
+	                    $i = 0;
                       foreach ($allUsers as $user) {
+                        if ($user['id'] == $_SESSION['user']['id']) {
+                          $i++;
+                        }
                           if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
-                              ?>
-                              <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                              $i++;
+			                         ?>
+                              <option value="<?= $user['id'];?>">N°<?= $i." : ".$user['first_name'];?></option>
                               <?php
                           }
                       }

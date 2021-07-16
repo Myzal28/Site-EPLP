@@ -14,7 +14,7 @@ if(!isset($_SESSION['user']) && $_SESSION['user']['username'] != "admin"){
         if(isset($_FILES['photo'])){
             $photoName = $_POST['user']."photo".$_FILES['photo']['name'];
             $fileMoved = move_uploaded_file($_FILES['photo']['tmp_name'],'../photos/'.$photoName);
-            if($fileMoved){
+	    if($fileMoved){
                 $u->addPhoto($_POST['user'],$photoName);
                 $_SESSION['flash']['success'] = "Votre photo a bien été ajoutée";
             }else{

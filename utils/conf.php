@@ -3,8 +3,8 @@
 define('DB_HOST', 'localhost');
 define('DB_PORT', 3306);
 define('DB_USER', 'root');
-define('DB_PWD', 'root');
-define('DB_NAME', 'eplp');
+define('DB_PWD', '5Fa7d2888158&&');
+define('DB_NAME', 'trente');
 
 $headers ="From: EPLP Lloret<eplp.lloret@gmail.com>"."\n";
 $headers .='Reply-To: eplp.lloret@gmail.com'."\n"; 
