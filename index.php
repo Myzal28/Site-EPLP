@@ -243,7 +243,40 @@ $allUsers = $uService->getAllActive();
             <div class="section-header text-center">
               <h3 class="section-title">Concours de Costumes</h3>
               <br>
-              
+              <?php 
+              foreach($allUsers as $user){
+                if($user['photo'] != null){
+                  ?>
+                  <div class="mySlides">
+                    <img class="w-100" src="./photos/<?= $user['photo'];?>" alt="photo from <?= $user['first_name'];?>">
+                    <p class="mb-1">Costume n°<span class="costume-number"></span> : <?= $user['first_name'];?></p>
+                  </div>
+                  <?php
+                }
+              }
+              ?>
+              <button class="btn btn-vacation" onclick="plusDivs(-1)"><i class="fas fa-chevron-circle-left"></i></button>
+              <button class="btn btn-vacation" onclick="plusDivs(+1)"><i class="fas fa-chevron-circle-right"></i></button>
+              <script>
+                var slideIndex = 1;
+                showDivs(slideIndex);
+
+                function plusDivs(n) {
+                  showDivs(slideIndex += n);
+                }
+
+                function showDivs(n) {
+                  var i;
+                  var x = document.getElementsByClassName("mySlides");
+                  if (n > x.length) {slideIndex = 1}
+                  if (n < 1) {slideIndex = x.length} ;
+                  for (i = 0; i < x.length; i++) {
+                    x[i].style.display = "none";
+                  }
+                  $('.costume-number').html(slideIndex);
+                  x[slideIndex-1].style.display = "block";
+                }
+                </script>
               <br>
               <?php
               if($uService->hasVoted($_SESSION['user']['id'])){
@@ -258,15 +291,17 @@ $allUsers = $uService->getAllActive();
                 <?php
               }else{
                 ?>
-                <form method="POST" action="script/addVotes.php">
+                <form method="POST" action="script/addVotes.php" class="mt-4">
                   <h5>Costume le plus drôle <i class="fas fa-grin-squint"></i></h5>
                   <select class="form-control" id="funniest" name="funniest">
                       <option value="none" selected disabled>---</option>
                       <?php
+                      $i = 0;
                       foreach ($allUsers as $user) {
+                        $i++;
                           if( ($user['id'] != $_SESSION['user']['id']) && ($user['photo'] != NULL) ){
                               ?>
-                              <option value="<?= $user['id'];?>"><?= $user['first_name'];?></option>
+                              <option value="<?= $user['id'];?>">N°<?= $i." : ".$user['first_name'];?></option>
                               <?php
                           }
                       }
@@ -375,6 +410,8 @@ $allUsers = $uService->getAllActive();
         }
       );
     }
+
+
   </script>
   <?php
   if (isset($_SESSION['flash'])) {
